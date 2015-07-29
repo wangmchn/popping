@@ -15,6 +15,7 @@
 @property (nonatomic) UILabel *errorLabel;
 @property (nonatomic) FlatButton *button;
 @property (nonatomic) UIActivityIndicatorView *activityIndicatorView;
+@property (nonatomic) NSLayoutConstraint *errorLabelCenterYConstraint;
 
 - (void)addButton;
 - (void)addLabel;
@@ -53,7 +54,7 @@
                                                           attribute:NSLayoutAttributeCenterX
                                                          multiplier:1.f
                                                            constant:0.f]];
-
+    
     [self.view addConstraint:[NSLayoutConstraint constraintWithItem:self.button
                                                           attribute:NSLayoutAttributeCenterY
                                                           relatedBy:NSLayoutRelationEqual
@@ -81,14 +82,15 @@
                               attribute:NSLayoutAttributeCenterX
                               multiplier:1
                               constant:0.f]];
-
-    [self.view addConstraint:[NSLayoutConstraint
-                              constraintWithItem:self.errorLabel
-                              attribute:NSLayoutAttributeCenterY
-                              relatedBy:NSLayoutRelationEqual toItem:self.button
-                              attribute:NSLayoutAttributeCenterY
-                              multiplier:1
-                              constant:0]];
+    
+    self.errorLabelCenterYConstraint = [NSLayoutConstraint
+                                        constraintWithItem:self.errorLabel
+                                        attribute:NSLayoutAttributeCenterY
+                                        relatedBy:NSLayoutRelationEqual toItem:self.button
+                                        attribute:NSLayoutAttributeCenterY
+                                        multiplier:1
+                                        constant:0];
+    [self.view addConstraint:self.errorLabelCenterYConstraint];
 
     self.errorLabel.layer.transform = CATransform3DMakeScale(0.5f, 0.5f, 1.f);
 }
@@ -138,6 +140,9 @@
     POPSpringAnimation *layerPositionAnimation = [POPSpringAnimation animationWithPropertyNamed:kPOPLayerPositionY];
     layerPositionAnimation.toValue = @(self.button.layer.position.y + self.button.intrinsicContentSize.height);
     layerPositionAnimation.springBounciness = 12;
+    [layerPositionAnimation setCompletionBlock:^(POPAnimation *animation, BOOL finished) {
+        self.errorLabelCenterYConstraint.constant = self.button.intrinsicContentSize.height;
+    }];
     [self.errorLabel.layer pop_addAnimation:layerPositionAnimation forKey:@"layerPositionAnimation"];
 }
 
@@ -149,6 +154,9 @@
 
     POPBasicAnimation *layerPositionAnimation = [POPBasicAnimation animationWithPropertyNamed:kPOPLayerPositionY];
     layerPositionAnimation.toValue = @(self.button.layer.position.y);
+    [layerPositionAnimation setCompletionBlock:^(POPAnimation *animation, BOOL finished) {
+        self.errorLabelCenterYConstraint.constant = 0.0f;
+    }];
     [self.errorLabel.layer pop_addAnimation:layerPositionAnimation forKey:@"layerPositionAnimation"];
 }
 
